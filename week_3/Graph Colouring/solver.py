@@ -14,32 +14,42 @@ def calc(edges, node_count, edge_count, order, max_colour):
     colour_count = 0
 
     for l in range(0, node_count):
-        flag = -1
+        
+        num_colour = -1
         i = order[l][0]
+        
         #i = l
+        #Беру вершину i из последовательности, смотрю на её цвета, встречаю первый свободный и крашу в него
+        #Нужно искать не первый свободный, а запоминать первый свободный и искать, который уже использовался
         for k in range (0, node_count):
             j = order[k][0]
             #j = k
-            if (colours[i][j] == 0):
-                colours[i][j] = 1
-                flag = j
-                if (colour_dict[j] == 0):
-                    colour_count += 1
-                    colour_dict[j] = 1
-                    if (colour_count >= max_colour):
-                        return max_colour+1, [0]
-                break
+            if (colours[i][j] == 0 and (colour_dict[j] == 1 or num_colour == -1)):
+                #print("I am here!:)")
+                num_colour = j
+                if (colour_dict[j] == 1):
+                    break        
         
+        #Если встретился, то выходить, если нет, то красить в первый свободный
+        colours[i][num_colour] = 1
+        if (colour_dict[num_colour] == 0):
+            colour_count += 1
+            colour_dict[num_colour] = 1
+
+        if (colour_count >= max_colour):
+            return max_colour+1, [0]
+            
+        #Здесь я говорю, что все соседние вершины не покрашены в этот цвет
         for j in range(0, node_count):
             if (edges[i][j] != 0):
-                colours[j][flag] = -1
+                colours[j][num_colour] = -1
             if (colours[i][j] == 0):
                 colours[i][j] = -1
     
     solution = [0] * node_count
     
+    #Здесь я смотрю у i-ой вершины на j-й цвет, и если он там есть, то крашу его в j-й цвет
     for i in range(0, node_count):
-        
         for j in range(0, node_count):
             if (colours[i][j] == 1):
                 solution[i] = j        
@@ -76,16 +86,16 @@ def solve_it(input_data):
     # build a trivial solution
     # every node has its own color
     #colour_count_1 = 0
-    #colour_count_1, solution_1 = calc(edges, node_count, edge_count, order)
- #
+    #colour_count_1, solution_1 = calc(edges, node_count, edge_count, order, node_count)
+
     #order.sort(key=lambda tup: tup[1])
     #colour_count_2 = 0
-    #colour_count_2, solution_2 = calc(edges, node_count, edge_count, order)
+    #colour_count_2, solution_2 = calc(edges, node_count, edge_count, order, node_count)
     #
     #order.sort(key=lambda tup: tup[0])
     #colour_count_0 = 0
-    #colour_count_0, solution_0 = calc(edges, node_count, edge_count, order)
-    #
+    #colour_count_0, solution_0 = calc(edges, node_count, edge_count, order, node_count)
+    
     #if (colour_count_0 < colour_count_1 and colour_count_0 < colour_count_2):
     #    colour_count = colour_count_0
     #    solution = solution_0
@@ -98,26 +108,37 @@ def solve_it(input_data):
     
     #print(order)
     colour_count = node_count
-    for i in range(100000):
+
+    for i in range(4):
         random.shuffle(order)
+        #order.sort(key=lambda tup: tup[1], reverse=True)
+        k = 0
+        in_order = 1
+        while(k <= node_count):
+            for j in range(node_count):
+                if (edges[k][j] != 0):
+                    temp = order[j]
+                    order[j] = order[in_order]
+                    order[in_order] = temp
+                    in_order += 1
+                if (in_order == node_count):
+                    k = node_count + 1
+                    break
+            k += 1
+
         colour_count_0 = 0
         colour_count_0, solution_0 = calc(edges, node_count, edge_count, order, colour_count)
 
         if (colour_count_0 < colour_count):
             colour_count = colour_count_0
             solution = solution_0
-            #print('xuy')
     
     #print(order)
-    
-    
-
     # prepare the solution in the specified output format
     output_data = str(colour_count) + ' ' + str(0) + '\n'
     output_data += ' '.join(map(str, solution))
 
     return output_data
-
 
 import sys
 
